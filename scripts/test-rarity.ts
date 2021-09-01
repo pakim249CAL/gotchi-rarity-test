@@ -1,20 +1,32 @@
 import "@nomiclabs/hardhat-waffle";
 import {ethers} from "hardhat";
+import * as fs from "fs";
 
 async function main() {
   const [owner] = await ethers.getSigners();
   const TestGotchi = await ethers.getContractFactory("TestGotchi");
   const testGotchi = await TestGotchi.deploy();
 
+  const simCount: number = 100000;
 
-  let h1brs: (number)[] = [];
-  let h2brs: (number)[] = [];
+  const h1stream = fs.createWriteStream('./haunt1.csv');
+  const h2stream = fs.createWriteStream('./haunt2.csv');
+  h1stream.write("t1,t2,t3,t4,t5,t6,brs");
+  h2stream.write("t1,t2,t3,t4,t5,t6,brs")
+  h1stream.on('error', function(err) { console.log('Error in writing') });
+  h2stream.on('error', function(err) { console.log('Error in writing') });
 
-  for(let i = 0; i < 100000; i++) {
+  function delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
+  }
+
+  console.log("Haunt 1 simulation starting");
+  for(let i = 0; i < simCount; i++) {
     const traits: (number)[] = await testGotchi.toNumericTraits(i, [0, 0, 0, 0, 0, 0], 1);
     let brs = 0;
     for(let j = 0; j < 6; j++) {
       const trait = traits[j];
+      h1stream.write(String(trait) + ',');
       if (trait < 50) {
         brs += 100 - trait;
       }
@@ -22,20 +34,18 @@ async function main() {
         brs += trait + 1;
       }
     }
-    if(brs > 510) {
-      h1brs.push(brs);
-    }
+    h1stream.write(String(brs) + '\n');
   }
-  h1brs.sort();
-  h1brs.reverse();
-  console.log("Haunt 1 BRS");
-  console.log(h1brs);
+  h1stream.end();
+  console.log("Haunt 1 simulation complete");
 
-  for(let i = 0; i < 100000; i++) {
+  console.log("Haunt 2 simulation starting");
+  for(let i = 0; i < simCount; i++) {
     const traits: (number)[] = await testGotchi.toNumericTraits(i, [0, 0, 0, 0, 0, 0], 2);
     let brs = 0;
     for(let j = 0; j < 6; j++) {
       const trait = traits[j];
+      h2stream.write(String(trait) + ',');
       if (trait < 50) {
         brs += 100 - trait;
       }
@@ -43,15 +53,13 @@ async function main() {
         brs += trait + 1;
       }
     }
-    if(brs > 510) {
-      h2brs.push(brs);
-    }
+    h2stream.write(String(brs) + '\n');
   }
-  h2brs.sort();
-  h2brs.reverse();
 
-  console.log("Haunt 2 BRS");
-  console.log(h2brs);
+  console.log("Haunt 2 simulation complete");
+  h2stream.end();
+  //Wait for the files to finish writing
+  await delay(10000 + simCount);
 }
 
 main()
