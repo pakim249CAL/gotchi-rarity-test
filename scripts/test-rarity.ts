@@ -10,7 +10,7 @@ async function main() {
   let h1brs: (number)[] = [];
   let h2brs: (number)[] = [];
 
-  for(let i = 0; i < 10000; i++) {
+  for(let i = 0; i < 100000; i++) {
     const traits: (number)[] = await testGotchi.toNumericTraits(i, [0, 0, 0, 0, 0, 0], 1);
     let brs = 0;
     for(let j = 0; j < 6; j++) {
@@ -22,14 +22,16 @@ async function main() {
         brs += trait + 1;
       }
     }
-    h1brs.push(brs);
+    if(brs > 510) {
+      h1brs.push(brs);
+    }
   }
   h1brs.sort();
   h1brs.reverse();
   console.log("Haunt 1 BRS");
   console.log(h1brs);
 
-  for(let i = 0; i < 10000; i++) {
+  for(let i = 0; i < 100000; i++) {
     const traits: (number)[] = await testGotchi.toNumericTraits(i, [0, 0, 0, 0, 0, 0], 2);
     let brs = 0;
     for(let j = 0; j < 6; j++) {
@@ -41,7 +43,9 @@ async function main() {
         brs += trait + 1;
       }
     }
-    h2brs.push(brs);
+    if(brs > 510) {
+      h2brs.push(brs);
+    }
   }
   h2brs.sort();
   h2brs.reverse();
